@@ -3,7 +3,7 @@ N_VOTERS = 10
 N_CHOICE = 5
 
 # Set public parameters (we must have p prime and p > N_VOTERS)
-P = 17 
+P = 11 
 port_compteur_1_v=11636
 port_compteur_1_c=11637
 port_compteur_2_v=11638
