@@ -8,18 +8,42 @@ cafile='myCA.cert'
 
 port=11662
 host='localhost'
-hostname='Votant n°1'
+hostname="Votant n 1"
 
-context=ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-context.load_cert_chain(crtfile,keyfile=key_file)
-context.load_verify_locations(cafile=cafile)
-context.verify_mode=ssl.CERT_REQUIRED
+def generer_vecteur_vote(taille):
+    x=np.zeros(taille)
 
-s= socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-conn=context.wrap_socket(s,server_side=False,server_hostname=hostname)
-conn.connect((host,port))
-print("SSL established. Peer:{}".format(conn.getpeercert()))
-x=np.zeros(10)
-x[5]=1
-protocol.send_array(conn,x)
+    x[np.random.randint(taille, size=1)]=1
+    return x
+
+      
+def generer_vecteur_random(taille,p):
+    return np.random.randint(p, size=taille)
+
+def addition_vecteur(vecteur_1,vecteur_2,modulo):
+    return (vecteur_1 + vecteur_2) % modulo
+
+def soustraction_vecteur(vecteur_1,vecteur_2,modulo):
+    return (vecteur_1 - vecteur_2) % modulo
+
+def send_compteur(port,vecteur,context,hostname):
+    s= socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    conn=context.wrap_socket(s,server_side=False,server_hostname=hostname)
+    conn.connect(('localhost',port))
+    print("SSL established. Peer:{}".format(conn.getpeercert()))
+    protocol.send_array(conn,vecteur)
+
+
+if __name__ == "__main__":
+    # Le choix du candidat par le votant est aléatoire. Ceci pourra être changé plus tard
+    # Doit être compris entre 0 et P - 1 pour ensuite pouvoir parcourir les listes
+    context=ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    context.load_cert_chain(crtfile,keyfile=key_file)
+    context.load_verify_locations(cafile=cafile)
+    context.verify_mode=ssl.CERT_REQUIRED
+    v1=generer_vecteur_vote(10)
+    random=generer_vecteur_random(10,23)
+    v1=addition_vecteur(v1,random,23)
+    print(hostname)
+    send_compteur(port,v1,context,hostname)
 
