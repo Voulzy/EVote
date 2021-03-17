@@ -2,14 +2,15 @@ import socket
 import ssl
 import numpy as np
 import protocol
+from config import port_compteur_1_v, port_compteur_2_v
 crtfile='Voteur_2.cert'
 key_file='Voteur_2.key'
 cafile='myCA.cert'
 
 port=11662
 host='localhost'
-hostname="Votant n 1"
-
+hostname_c1="Votant n 1"
+hostname_c2="Votant n 3"
 def generer_vecteur_vote(taille):
     x=np.zeros(taille)
 
@@ -43,7 +44,8 @@ if __name__ == "__main__":
     context.verify_mode=ssl.CERT_REQUIRED
     v1=generer_vecteur_vote(10)
     random=generer_vecteur_random(10,23)
-    v1=addition_vecteur(v1,random,23)
-    print(hostname)
-    send_compteur(port,v1,context,hostname)
+    final_add=addition_vecteur(v1,random,23)
+    print(final_add)
+    send_compteur(port_compteur_1_v,final_add,context,hostname_c1)
+    send_compteur(port_compteur_2_v,soustraction_vecteur(v1,random,23),context,hostname_c2)
 
