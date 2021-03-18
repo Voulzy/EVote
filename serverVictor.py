@@ -12,15 +12,16 @@ class ClientThread(Thread):
         self.ip = ip 
         self.port = port 
         print("[+] New server socket thread started for " + ip + ":" + str(port))
+        
  
     def run(self): 
-        #while True : 
-        data = conn.recv(2048) 
-        print("Server received data:", data)
-        #MESSAGE = input("Multithreaded Python server : Enter Response from Server/Enter exit:")
-       # if MESSAGE == 'exit':
-        #    break
-       #conn.send(MESSAGE)  # echo 
+        while True : 
+	        data = protocol.recv_array(conn)
+	        print("Server received data:", data)
+	        MESSAGE = input("Multithreaded Python server : Enter Response from Server/Enter exit:")
+	        if MESSAGE == 'exit':
+	           break
+	        conn.send(MESSAGE.encode())  # echo 
 host="127.0.0.1"
 port=11662
 crtfile ='Voteur_1.cert'
@@ -47,6 +48,7 @@ while True:
 	ssock.listen(5)
 	(conn, (ip,port))= ssock.accept()
 	newthread = ClientThread(ip,port)
+	print("SSL established. Peer:{}".format(conn.getpeercert()))
 	newthread.start()
 	threads.append(newthread)
 
