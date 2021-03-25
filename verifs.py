@@ -1,26 +1,52 @@
 import asyncio
 import numpy as np
 
-import voters
-from config import N_CHOICE, P
+from voters import Vot
+from config import N_CHOICE, N_VOTERS, P
 
 # TODO
-# Recevoir V et M des votants dans receive_vote (voterID servira à identifier les threads votants)
-# Ecire deux scripts différents pour chaque vérificateur ?
-# Il faudra un vérficateur "chef" pour faire la somme finale
+# Pour l'instant fonctionne sans aucune connection SSL. Le vecteur Vot a été crée dans voters.py,
+# mais dans la réalité il devra venir par une connexion
 
-async def receive_vote(checkID: int, voterID: int) -> bool:
+def receive_vote(checkID: int, voterID: int):
     # Incomplet pour l'instant
-    vote_value = await voters.vote()
+    vote_value = Vot[voterID][checkID]
+    return vote_value
+
+# Regroupe tous les votes reçus et les somme
+def regroup_votes(checkID: int):
     
-    return True
+    voteCID = np.zeros(N_CHOICE, dtype=int)
+    for voterID in range(N_VOTERS):
+        voteCID = np.add(voteCID, receive_vote(checkID, voterID))
+        
+    return voteCID
 
 # TODO
-# Choisir qui parmi C1 ou C2 va recevoir la liste de l'autre vérificateur pour les sommer
+# On choisit C1 qui reçoit les votes de C2. Les variables voteC1 et voteC2 sont des listes qui
+# contienent les vecteurs de vote brouillés
 
-async def check_vote(voteC1, voteC2):
+def check_vote(voteC1, voteC2):
+    
     voteResults = np.zeros(N_CHOICE, dtype=int)
     for i in range(N_CHOICE):
-        voteResults[i] = (voteC1 + voteC2) % P
-    
+        voteResults[i] = (voteC1[i] + voteC2[i]) % P
+
     return voteResults
+
+if __name__ == "__main__":
+    
+    # C1 et C2 regoupent leurs votes
+    voteC1 = regroup_votes(0)
+    voteC2 = regroup_votes(1)
+    
+    # C1 et C2 additionnent leurs votes (modulo P)
+    electResults = check_vote(voteC1, voteC2)
+    
+    # Debuggage
+    print(voteC1)
+    print(voteC2)
+    
+    print(electResults)
+    
+    
