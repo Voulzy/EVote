@@ -19,7 +19,7 @@ if __name__ == '__main__':
 	generateCertif.save_certificate(ca_cert,'myCA.cert')
 	for i in range(0,options.number_votant):
 		key=generateCertif.create_key(options.key_size)
-		req=generateCertif.create_request(key,f'Votant n°{i}')
+		req=generateCertif.create_request(key,f'Votant n {i}')
 		cert=generateCertif.create_certificate(req,ca_req,ca_key,256+i)
 		generateCertif.save_key(key,f'Voteur_{i}.key')
 		generateCertif.save_certificate(cert,f'Voteur_{i}.cert')

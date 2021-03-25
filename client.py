@@ -47,5 +47,5 @@ if __name__ == "__main__":
     final_add=addition_vecteur(v1,random,23)
     print(final_add)
     send_compteur(port_compteur_1_v,final_add,context,hostname_c1)
-    send_compteur(port_compteur_2_v,soustraction_vecteur(v1,random,23),context,hostname_c2)
+    #send_compteur(port_compteur_2_v,-random,context,hostname_c2)
 
