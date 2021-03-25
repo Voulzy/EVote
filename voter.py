@@ -1,5 +1,6 @@
 import numpy as np
 import socket
+from threading import Thread
 
 from config import N_CHOICE, N_VOTERS, P
         
@@ -19,6 +20,14 @@ def send_vote(addr, port, mess):
     print(Response.decode('utf-8'))
     
     ClientSocket.close()
+    
+def send_votes(addr, ports, mess):
+    
+    assert len(ports) == len(mess), "Erreur. Vous n'envoyez pas tous les votes ou trop de votes"
+    
+    # On envoie tous les votes nécessaires
+    for i in range(len(ports)):
+        send_vote(addr, ports[i], mess[i])
     
 def vote(candID: int):
     # Set vote vector and mask vector for each voter
@@ -43,8 +52,7 @@ if __name__ == "__main__":
     
     # Set ports
     host = socket.gethostname()
-    portC1 = 1233
-    portC2 = 1232
+    ports = (1233, 1232)
     
     # Count voters
     i = 0
@@ -54,13 +62,12 @@ if __name__ == "__main__":
         assert 0 <= int(Input) and int(Input) < N_CHOICE, "Your vote is not valid"
         
         # On effectue le vote
-        vote1, vote2 = vote(int(Input))
+        votes = vote(int(Input))
         
-        # On envoie le vote masqué à C1
-        send_vote(host, portC1, vote1)
-        
-        # On envoie le vote masqué à C2
-        send_vote(host, portC2, vote2)
+        # On crée le thread pour le votant et on envoie les votes
+        voter = Thread(target=send_votes, args=(host, ports, votes))
+        voter.start()
+        voter.join()
         
         # A voté
         print("Voter number {} has voted".format(i + 1))
