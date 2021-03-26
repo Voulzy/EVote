@@ -19,7 +19,7 @@ async def handle_client(reader,writer,data1):
 			if not size_bytes:
 				print("Connecion end")
 				break
-		except asyncio.IncompleteReadError:
+		except BrokenPipeError:
 			print("Connection end")
 			break
 		size=int.from_bytes(size_bytes,byteorder='big')
@@ -38,6 +38,7 @@ async def handle_client(reader,writer,data1):
 		print(data)
 #		reader.close()
 		writer.close()
+		break
 	#	return
 #async def handle_compteur(reader,writer,random,sum_vote):
 #	random=protocol_async.cast_array(random)
@@ -86,6 +87,7 @@ def compteur_exchange(port,context,vecteur):
 	conn.connect(('localhost',port))
 	protocol.send_array(conn,vecteur)
 	data = protocol.recv_array(conn)
+	s.close()
 	return data
 		
 async def main():

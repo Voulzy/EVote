@@ -12,14 +12,14 @@ data=[0,0,0,0,0,0,0,0,0,0]
 vote=[]
 async def handle_client(reader,writer,data1):
 	global data
-	
+	print("Handle 1")	
 	while True : 
 		try : 
 			size_bytes = await reader.readexactly(4)
 			if not size_bytes:
 				print("Connecion end")
 				break
-		except asyncio.IncompleteReadError:
+		except BrokenPipeError:
 			print("Connection end")
 			break
 		size=int.from_bytes(size_bytes,byteorder='big')
@@ -36,6 +36,7 @@ async def handle_client(reader,writer,data1):
 		print(data)
 		data+=pickle.loads(data1)
 		print(data)
+		break;
 #		reader.close
 	#	return
 async def handle_compteur(reader,writer,vote1,sum_random):
@@ -68,14 +69,14 @@ async def handle_compteur(reader,writer,vote1,sum_random):
 
 
 
-def receiv_client(port,context) :
-	with socket.socket(socket.AF_INET,socket.SOCK_STREAM,0) as sock:
-		sock.bind(('127.0.0.1',port))
-		sock.listen(10)
-		with context.wrap_socket(sock, server_side=True) as ssock:
-			conn, addr = ssock.accept()
-	data=protocol.recv_array(conn)
-	return data
+#def receiv_client(port,context) :
+#	with socket.socket(socket.AF_INET,socket.SOCK_STREAM,0) as sock:
+#		sock.bind(('127.0.0.1',port))
+#		sock.listen(10)
+#		with context.wrap_socket(sock, server_side=True) as ssock:
+#			conn, addr = ssock.accept()
+#	data=protocol.recv_array(conn)
+#	return data
 
 def compteur_exchange(port,context,vecteur):
 	with socket.socket(socket.AF_INET,socket.SOCK_STREAM,0) as sock:
@@ -85,6 +86,8 @@ def compteur_exchange(port,context,vecteur):
 			conn, addr = ssock.accept()
 	data=protocol.recv_array(conn)
 	protocol.send_array(conn,vecteur)
+	time.sleep(1)
+	conn.close()
 	return data
 async def main():
 	context=ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)

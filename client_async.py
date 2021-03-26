@@ -38,6 +38,7 @@ def send_compteur(port,vecteur,context,hostname):
     print("SSL established. Peer:{}".format(conn.getpeercert()))
     data=protocol_async.cast_array(vecteur)
     conn.send(data)
+    
 
 def send_votes(crtfile,key_file):
     print(crtfile)
@@ -72,5 +73,6 @@ if __name__ == "__main__":
         voter = Thread(target=send_votes,args=(os.path.join(path,f'Voteur_{i+2}.cert'),os.path.join(path,f'Voteur_{i+2}.key')))
         voter.start()
         voter.join()
+        time.sleep(3)
         i+=1
-        time.sleep(1)
+        
