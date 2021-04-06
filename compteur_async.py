@@ -39,29 +39,27 @@ async def handle_client(reader,writer,data1):
 			break
 		try : 
 			size_bytes = await reader.readexactly(4)
-			if not size_bytes:
-				print("Connecion end")
-				break
+			#if not size_bytes:
+			#	print("Connection end")
+			#	break
 		except BrokenPipeError:
-			print("Connection end")
+			print("Le client a terminé la connexion")
 			break
 		size=int.from_bytes(size_bytes,byteorder='big')
 		print(size)
 		try:
 			data1= await reader.readexactly(size)
 			writer.close()
-			if not size_bytes:
-				print('Connection terminated with {}')
-				break
+			#if not size_bytes:
+			#	print('Connection terminated with {}')
+			#	break
 		except asyncio.IncompleteReadError:
-			print('Connection terminated with {}')
+			print('Problème de lecture')
 			break
 		print(data)
 		data+=pickle.loads(data1)
 		print(data)
 		break;
-#		reader.close
-	#	return
 async def handle_compteur(reader,writer,vote1,sum_random):
 	global vote	
 	try : 
@@ -136,7 +134,7 @@ async def main():
 	await asyncio.sleep(10)
 	print(data)
 	vecteur_random=compteur_exchange(port_compteur_1_c,context,data)	
-	print ((vecteur_random+data)%23)
+	print ((data+vecteur_random)%23)
 #	await asyncio.start_server(lambda r,w : handle_compteur(r,w,vote,data,),'127.0.0.1',port_compteur_1_c,ssl=context)
 	#loop.run_until_complete(coroutine_2)
 #	await asyncio.sleep(5)
