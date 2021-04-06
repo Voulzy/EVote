@@ -48,9 +48,9 @@ def send_votes(crtfile,key_file):
     context.verify_mode=ssl.CERT_REQUIRED
     v1=generer_vecteur_vote(10)
     random=generer_vecteur_random(10,23)
-    final_add=addition_vecteur(v1,random,23)
+    final_add=soustraction_vecteur(v1,random,23)
     send_compteur(port_compteur_2_v,final_add,context,hostname_c2)
-    send_compteur(port_compteur_1_v,-random,context,hostname_c1)
+    send_compteur(port_compteur_1_v,random,context,hostname_c1)
 
 if __name__ == "__main__":
     # Le choix du candidat par le votant est aléatoire. Ceci pourra être changé plus tard
