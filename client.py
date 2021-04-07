@@ -2,7 +2,7 @@ import socket
 import ssl
 import os
 import numpy as np
-import protocol_async
+import protocol
 from config import port_compteur_1_v, port_compteur_2_v
 import time
 from threading import Thread
@@ -36,7 +36,7 @@ def send_compteur(port,vecteur,context,hostname):
     conn=context.wrap_socket(s,server_side=False,server_hostname=hostname)
     conn.connect(('localhost',port))
     print("Connexion établie avec le comteur (adresse,port):{}".format(conn.getpeername()))
-    data=protocol_async.cast_array(vecteur)
+    data=protocol.cast_array(vecteur)
     conn.send(data)
     
 

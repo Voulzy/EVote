@@ -12,6 +12,17 @@ def send_array(sock, array):
 	data=bytes(f"{len(array_string):<{HEADERSIZE}}", 'utf-8')+array_string
 	sock.send(data)
 
+def cast_array(array):
+
+    length = len(array)*8
+    array_string=pickle.dumps(array)
+    length=len(array_string)
+#   print(array_string)
+    data=length.to_bytes(4,byteorder='big')+array_string
+#   print(data)
+    return data
+
+
 def recvall(sock):
     full_msg=b''
     new_msg=True
