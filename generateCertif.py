@@ -6,6 +6,8 @@ key party_0.key are created, which are used together with mpyc_ca.crt to
 set up an SSL/TLS connection. Similarly, for the remaining parties.
 """
 
+"""Propriety of mpyc librairies, use in this project"""
+
 import argparse
 from OpenSSL import crypto
 
