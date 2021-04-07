@@ -1,7 +1,19 @@
 # EVote
+A POC for multi-parti-computing, for e-vote.  
+Scénario : 2 "compteurs", N voteurs. Each voteur send a vector to both compteur.  
+One vector is random, the other is random+vote. All operations are done modulo P (with P a prime)
 
-rm Voteur_* piur supprimer les certificats puis rm myCA*  
-For asyncio ==> Run test.py -k 2048 -n 5 (3 votants) ==> crée tous les nouveaux certificats  
-Lancer dans 3 terminaux : compteur_async.py 5 (en premier) compteur_async_2.py 5, puis client_async.py  
-Les threads ont était intégrer dans client_async.py     
-Il reste à gérer les exceptions (brokenpipe par exemple), mais le programme marche (l'exception arrive après la lecture de la donnée)
+## Pré-Requis  
+Python x >=3.8  
+asyncio, time, openssl, socket (available with pip install)  
+
+## Configuration   
+run test.py (-k foor bits number of keys, -n for number of participant)  --> Output certificate (authority, compteur and participant)
+  
+## Run a demo  
+In order to run a demo : run in three different terminal : 
+* First, compteur_1.py
+* Second, compteur_2.py
+* Third, client.py
+
+You'll see the votes. You can use wireshark to verify it's encrypted throught the channel (localhost for now)
