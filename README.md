@@ -12,8 +12,8 @@ run createCertif.py (-k foor bits number of keys, -n for number of participant) 
   
 ## Run a demo  
 In order to run a demo (3 voteurs) : run in three different terminal : 
-* First, compteur_1.py 4
-* Second, compteur_2.py 4
+* First, compteur1.py 4
+* Second, compteur2.py 4
 * Third, client.py
 
 You'll see the votes. You can use wireshark to verify it's encrypted throught the channel (localhost for now)
