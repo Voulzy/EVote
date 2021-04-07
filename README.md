@@ -8,7 +8,7 @@ Python x >=3.8
 asyncio, time, openssl, socket (available with pip install)  
 
 ## Configuration   
-run test.py (-k foor bits number of keys, -n for number of participant)  --> Output certificate (authority, compteur and participant)
+run createCertif.py (-k foor bits number of keys, -n for number of participant)  --> Output certificate (authority, compteur and participant)
   
 ## Run a demo  
 In order to run a demo (3 voteurs) : run in three different terminal : 
