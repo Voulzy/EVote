@@ -35,22 +35,23 @@ def send_compteur(port,vecteur,context,hostname):
     s= socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     conn=context.wrap_socket(s,server_side=False,server_hostname=hostname)
     conn.connect(('localhost',port))
-    print("SSL established. Peer:{}".format(conn.getpeercert()))
+    print("Connexion établie avec le comteur (adresse,port):{}".format(conn.getpeername()))
     data=protocol_async.cast_array(vecteur)
     conn.send(data)
     
 
 def send_votes(crtfile,key_file):
-    print(crtfile)
     context=ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
     context.load_cert_chain(crtfile,keyfile=key_file)
     context.load_verify_locations(cafile=cafile)
     context.verify_mode=ssl.CERT_REQUIRED
     v1=generer_vecteur_vote(10)
     random=generer_vecteur_random(10,23)
-    final_add=addition_vecteur(v1,random,23)
+    final_add=soustraction_vecteur(v1,random,23)
+    send_compteur(port_compteur_1_v,random,context,hostname_c1)
+    print("On as envoyé le vecteur ",random)
     send_compteur(port_compteur_2_v,final_add,context,hostname_c2)
-    send_compteur(port_compteur_1_v,-random,context,hostname_c1)
+    print("On as envoyé le vecteur ",final_add)
 
 if __name__ == "__main__":
     # Le choix du candidat par le votant est aléatoire. Ceci pourra être changé plus tard
@@ -69,10 +70,10 @@ if __name__ == "__main__":
     i=0
     path=os.getcwd()
     while i < 3 : 
-        print (f'Voteur_{i+2}.crt')
+        print (f'Voteur_{i+2}')
         voter = Thread(target=send_votes,args=(os.path.join(path,f'Voteur_{i+2}.cert'),os.path.join(path,f'Voteur_{i+2}.key')))
         voter.start()
         voter.join()
-        time.sleep(3)
+        time.sleep(0.5)
         i+=1
         

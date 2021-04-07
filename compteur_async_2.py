@@ -16,10 +16,11 @@ nbVotants=int(sys.argv[1])
 data=[0,0,0,0,0,0,0,0,0,0]
 pubkeys = []
 didvote = []
+dico_a = dict()
 
 async def handle_client(reader,writer,data1):
 	global data
-	
+	pub_key_dico=''
 	while True :
 		pub= writer.get_extra_info('ssl_object')
 		der= pub.getpeercert(binary_form=True)
@@ -33,63 +34,29 @@ async def handle_client(reader,writer,data1):
 			else:
 				print("Allowed")
 				didvote.append(pubKeyString)
+				pub_key_dico=pubKeyString
 		else:
 			print("Not allowed")
 			break
 		try : 
 			size_bytes = await reader.readexactly(4)
-			if not size_bytes:
-				print("Connecion end")
-				break
 		except BrokenPipeError:
-			print("Connection end")
+			print("Connection terminer par le client")
 			break
 		size=int.from_bytes(size_bytes,byteorder='big')
-		print(size)
 		try:
 			data1= await reader.readexactly(size)
 			writer.close()
-			if not size_bytes:
-				print('Connection terminated with {}')
-				break
 		except asyncio.IncompleteReadError:
-			print('Connection terminated with {}')
+			print('Probleme de lecture')
 			break
-		print(data)
+		
 		data+=pickle.loads(data1)
-		print(data)
-#		reader.close()
+		dico_a[pub_key_dico]=pickle.loads(data1)
+		print("On as recu : ",pickle.loads(data1))
 		writer.close()
 		break
-	#	return
-#async def handle_compteur(reader,writer,random,sum_vote):
-#	random=protocol_async.cast_array(random)
-#	writer.write(random)
-#	await writer.drain()
-#	try : 
-#		size_bytes = await reader.readexactly(4)
-#		if not size_bytes:
-#			print("Connecion end")
-			
-#	except asyncio.IncompleteReadError:
-#	print("Connection end")
-#	break
-#	size=int.from_bytes(size_bytes,byteorder='big')
-#	print(size)
-#	try:
-#		data1= await reader.readexactly(size)
-#		if not size_bytes:
-#			print('Connection terminated with {}')
-#			break
-#	except asyncio.IncompleteReadError:
-#		print('Connection terminated with {}')
-#		break
-#	print(data)
- #	sum_vote=pickle.loads(data1)
-#	print(sum_vote)
-#               reader.close()
- 	
-	
+
 	
 
 
@@ -111,8 +78,9 @@ def compteur_exchange(port,context,vecteur):
 	data = protocol.recv_array(conn)
 	s.close()
 	return data
+
 def get_public_keys(i):
-	for j in range(3,i+1):
+	for j in range(3,i+2):
 		file_path = os.path.join(os.getcwd(),'Voteur_{}.cert').format(j-1)
 		f = open(file_path,'r')
 		cert = f.read()
@@ -121,23 +89,52 @@ def get_public_keys(i):
 		pubKeyString = crypto.dump_publickey(crypto.FILETYPE_PEM,pubKeyObject)
 		pubkeys.append(pubKeyString)
 
+def compare_dico(own_dico,other_dico):
+	tab=[]
+	for key in other_dico.keys():
+		if not key in own_dico :
+			tab.append(key)
+	for i in tab:
+		del other_dico[i]
+		print("On enleve un vote")
+	tab=[]
+	for key in own_dico.keys():
+		if not key in other_dico :
+			tab.append(key)
+	for i in tab:
+		print("On enleve un vote")
+		del own_dico[i]
+	return own_dico, other_dico
+
+def comptage_vote(own_dico,other_dico):
+	vecteur_1=[0,0,0,0,0,0,0,0,0,0]
+	vecteur_2=[0,0,0,0,0,0,0,0,0,0]
+	for valeurs in own_dico.values():
+		vecteur_1+=valeurs
+	for valeurs in other_dico.values():
+		vecteur_2+=valeurs
+	return (vecteur_1+vecteur_2)%23
+
 async def main():
 	get_public_keys(nbVotants)
-	print(pubkeys)
 	context=ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
 	context.load_cert_chain(crtfile,keyfile=key_file)
 	context.load_verify_locations(cafile=cafile)
 	context.verify_mode=ssl.CERT_REQUIRED
-	loop_1=asyncio.get_event_loop()
-	test=1
+	#loop_1=asyncio.get_event_loop()
 	await asyncio.start_server(lambda r,w : handle_client(r,w,data),'127.0.0.1',port_compteur_2_v,ssl=context)
 	await asyncio.sleep(10)
 	context_c=ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
 	context_c.load_cert_chain(crtfile,keyfile=key_file)
 	context_c.load_verify_locations(cafile=cafile)
 	context_c.verify_mode=ssl.CERT_REQUIRED
-	vecteur_final=compteur_exchange(port_compteur_1_c,context_c,data)
-	print((vecteur_final+data)%23)
+	vecteur_final=compteur_exchange(port_compteur_1_c,context_c,dico_a)
+	dico, other_dico = compare_dico(dico_a,vecteur_final)
+	print("Resultat final :")
+	print(comptage_vote(dico,other_dico))
+
+
+	
 #	reader,writer = await asyncio.open_connection('localhost',port_compteur_1_c,ssl=context_c)
 #	writer.write(protocol_async.cast_array(random))
 #	await writer.drain()
