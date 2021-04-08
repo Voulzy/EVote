@@ -51,7 +51,7 @@ async def handle_client(reader,writer,data1):
 			print('Problème de lecture')
 			break
 		dico_a[pub_key_dico]=pickle.loads(data1)
-		print("On as recu : ",pickle.loads(data1))
+		print("On a recu : ",pickle.loads(data1))
 		break;
 
 def compteur_exchange(port,context,vecteur):

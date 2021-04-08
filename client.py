@@ -49,9 +49,9 @@ def send_votes(crtfile,key_file):
     random=generer_vecteur_random(10,23)
     final_add=soustraction_vecteur(v1,random,23)
     send_compteur(port_compteur_1_v,random,context,hostname_c1)
-    print("On as envoyé le vecteur ",random)
+    print("On a envoyé le vecteur ",random)
     send_compteur(port_compteur_2_v,final_add,context,hostname_c2)
-    print("On as envoyé le vecteur ",final_add)
+    print("On a envoyé le vecteur ",final_add)
 
 if __name__ == "__main__":
     # Le choix du candidat par le votant est aléatoire. Ceci pourra être changé plus tard

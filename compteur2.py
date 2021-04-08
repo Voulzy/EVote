@@ -53,7 +53,7 @@ async def handle_client(reader,writer,data1):
 		
 		data+=pickle.loads(data1)
 		dico_a[pub_key_dico]=pickle.loads(data1)
-		print("On as recu : ",pickle.loads(data1))
+		print("On a recu : ",pickle.loads(data1))
 		writer.close()
 		break
 
