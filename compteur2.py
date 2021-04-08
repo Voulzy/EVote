@@ -70,14 +70,19 @@ def receiv_client(port,context) :
 	data=protocol.recv_array(conn)
 	return data
 
-def compteur_exchange(port,context,vecteur):
+def compteur_exchange(port,context,vecteur,dico):
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
 	conn=context.wrap_socket(s,server_side=False,server_hostname=hostname)
 	conn.connect(('localhost',port))
 	protocol.send_array(conn,vecteur)
 	data = protocol.recv_array(conn)
+	real_vote=compare_votes(data,vecteur)
+	dico_sort=compare_dico(dico,real_vote)
+	vecteur_votes=get_sum_votes(dico_sort)
+	data=protocol.recv_array(conn)
+	protocol.send_array(conn,vecteur_votes)
 	s.close()
-	return data
+	return data,vecteur_votes
 
 def get_public_keys(i):
 	for j in range(3,i+2):
@@ -89,31 +94,32 @@ def get_public_keys(i):
 		pubKeyString = crypto.dump_publickey(crypto.FILETYPE_PEM,pubKeyObject)
 		pubkeys.append(pubKeyString)
 
-def compare_dico(own_dico,other_dico):
-	tab=[]
-	for key in other_dico.keys():
-		if not key in own_dico :
-			tab.append(key)
-	for i in tab:
-		del other_dico[i]
-		print("On enleve un vote")
+def compare_votes(own,other):
+	real_vote=[]
+	for i in own : 
+		for j in other :
+			if(i==j):
+				real_vote.append(i)
+	return real_vote
+
+def compare_dico(own_dico,real_vote):
 	tab=[]
 	for key in own_dico.keys():
-		if not key in other_dico :
+		if not key in real_vote :
 			tab.append(key)
 	for i in tab:
-		print("On enleve un vote")
 		del own_dico[i]
-	return own_dico, other_dico
-
-def comptage_vote(own_dico,other_dico):
+		print("On enleve un vote")
+	return own_dico
+def get_sum_votes(own_dico):
 	vecteur_1=[0,0,0,0,0,0,0,0,0,0]
-	vecteur_2=[0,0,0,0,0,0,0,0,0,0]
 	for valeurs in own_dico.values():
 		vecteur_1+=valeurs
-	for valeurs in other_dico.values():
-		vecteur_2+=valeurs
-	return (vecteur_1+vecteur_2)%23
+	return vecteur_1
+
+def verification_vote(vecteur,dico) :
+	i=sum(vecteur)
+	return i==len(dico)
 
 async def main():
 	get_public_keys(nbVotants)
@@ -128,42 +134,15 @@ async def main():
 	context_c.load_cert_chain(crtfile,keyfile=key_file)
 	context_c.load_verify_locations(cafile=cafile)
 	context_c.verify_mode=ssl.CERT_REQUIRED
-	vecteur_final=compteur_exchange(port_compteur_1_c,context_c,dico_a)
-	dico, other_dico = compare_dico(dico_a,vecteur_final)
-	print("Resultat final :")
-	print(comptage_vote(dico,other_dico))
-
-
-	
-#	reader,writer = await asyncio.open_connection('localhost',port_compteur_1_c,ssl=context_c)
-#	writer.write(protocol_async.cast_array(random))
-#	await writer.drain()
-#	size_bytes= await reader.read_exactly(4)
-#	size=int.from_bytes(size_bytes,byteorder='big')
-#	vote_bytes= await reader.read_exactly(size)
-#	print(pickle.loads(vote_bytes))
-	
-	
-#	await asyncio.start_server(lambda r,w : handle_compteur(r,w,data),'127.0.0.1',port_compteur_1_c,ssl=context,loop=loop)
-	#server_voteur=loop.run_until_complete(coroutine_client)
-#       server_compteur=loop.run_until_complete(coroutine)
-	#loop.run_forever()
+	other_votes,own_votes=compteur_exchange(port_compteur_1_c,context,didvote,dico_a)	
+	resultat=(other_votes+own_votes)%23
+	if (verification_vote(resultat,dico_a)):
+		print("Resultat final :")
+		print(resultat)
+	else : 
+		print("Il y a eu une triche")
 
 if __name__ == "__main__":
-	#context=ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-	#context.load_cert_chain(crtfile,keyfile=key_file)
-	#context.load_verify_locations(cafile=cafile)
-	#context.verify_mode=ssl.CERT_REQUIRED
 	loop=asyncio.get_event_loop()
-	#test=1
-	#coroutine_client = await  asyncio.start_server(lambda r,w : handle_client(r,w,test),'127.0.0.1',port_compteur_1_v,ssl=context,loop=loop)
-#	coroutine_compteur = asyncio.start_server(handle_compteur,'127.0.0.1',port_compteur_1_c,ssl=context,loop=loop)
-	#server_voteur=loop.run_until_complete(coroutine)
-#	server_compteur=loop.run_until_complete(coroutine)
-	#loop.create_task(main())
 	loop.run_until_complete(main())
-	#vecteur_addition=receiv_client(port_compteur_1_v,context)
-	#print(vecteur_addition)
-	#vecteur_soustraction=compteur_exchange(port_compteur_1_c,context,vecteur_addition)
-	#print((vecteur_soustraction+vecteur_addition)%23)
-#	server_context()
+

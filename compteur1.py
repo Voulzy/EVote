@@ -18,8 +18,8 @@ pubkeys = []
 didvote = []
 dico_a = {}
 
-async def handle_client(reader,writer,data1):
-	global data
+async def handle_client(reader,writer):
+	data=''
 	pub_key_dico=''
 	while True :
 		pub= writer.get_extra_info('ssl_object')
@@ -45,16 +45,16 @@ async def handle_client(reader,writer,data1):
 			break
 		size=int.from_bytes(size_bytes,byteorder='big')
 		try:
-			data1= await reader.readexactly(size)
+			data= await reader.readexactly(size)
 			writer.close()
 		except asyncio.IncompleteReadError:
 			print('Problème de lecture')
 			break
-		dico_a[pub_key_dico]=pickle.loads(data1)
-		print("On as recu : ",pickle.loads(data1))
+		dico_a[pub_key_dico]=pickle.loads(data)
+		print("On as recu : ",pickle.loads(data))
 		break;
 
-def compteur_exchange(port,context,vecteur):
+def compteur_exchange(port,context,vecteur,dico):
 	with socket.socket(socket.AF_INET,socket.SOCK_STREAM,0) as sock:
 		sock.bind(('127.0.0.1',port))
 		sock.listen(10)
@@ -62,10 +62,22 @@ def compteur_exchange(port,context,vecteur):
 			conn, addr = ssock.accept()
 	data=protocol.recv_array(conn)
 	protocol.send_array(conn,vecteur)
-	time.sleep(1)
+	real_vote=compare_votes(data,vecteur)
+	dico_sort=compare_dico(dico,real_vote)
+	vecteur_votes=get_sum_votes(dico_sort)
+	protocol.send_array(conn,vecteur_votes)
+	data=protocol.recv_array(conn)
 	conn.close()
 	sock.close()
-	return data
+	return data,vecteur_votes
+
+def compare_votes(own,other):
+	real_vote=[]
+	for i in own : 
+		for j in other :
+			if(i==j):
+				real_vote.append(i)
+	return real_vote
 
 def get_public_keys(i):
 	for j in range(3,i+2):
@@ -77,22 +89,21 @@ def get_public_keys(i):
 		pubKeyString = crypto.dump_publickey(crypto.FILETYPE_PEM,pubKeyObject)
 		pubkeys.append(pubKeyString)
 
-def compare_dico(own_dico,other_dico):
-	tab=[]
-	for key in other_dico.keys():
-		if not key in own_dico :
-			tab.append(key)
-	for i in tab:
-		del other_dico[i]
-		print("On enleve un vote")
+def compare_dico(own_dico,real_vote):
 	tab=[]
 	for key in own_dico.keys():
-		if not key in other_dico :
+		if not key in real_vote :
 			tab.append(key)
 	for i in tab:
-		print("On enleve un vote")
 		del own_dico[i]
-	return own_dico, other_dico
+		print("On enleve un vote")
+	return own_dico
+def get_sum_votes(own_dico):
+	vecteur_1=[0,0,0,0,0,0,0,0,0,0]
+	for valeurs in own_dico.values():
+		vecteur_1+=valeurs
+	return vecteur_1
+
 
 def comptage_vote(own_dico,other_dico):
 	vecteur_1=[0,0,0,0,0,0,0,0,0,0]
@@ -103,6 +114,10 @@ def comptage_vote(own_dico,other_dico):
 		vecteur_2+=valeurs
 	return (vecteur_1+vecteur_2)%23
 
+def verification_vote(vecteur,dico) :
+	i=sum(vecteur)
+	return i==len(dico)
+
 async def main():
 	get_public_keys(nbVotants)
 	context=ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
@@ -110,13 +125,15 @@ async def main():
 	context.load_verify_locations(cafile=cafile)
 	context.verify_mode=ssl.CERT_REQUIRED
 	loop_1=asyncio.get_event_loop()
-	test=1
-	await asyncio.start_server(lambda r,w : handle_client(r,w,data),'127.0.0.1',port_compteur_1_v,ssl=context)
+	await asyncio.start_server(lambda r,w : handle_client(r,w),'127.0.0.1',port_compteur_1_v,ssl=context)
 	await asyncio.sleep(10)
-	vecteur_random=compteur_exchange(port_compteur_1_c,context,dico_a)	
-	dico, other_dico = compare_dico(dico_a,vecteur_random)
-	print("Resultat final :")
-	print(comptage_vote(dico,other_dico))
+	other_votes,own_votes=compteur_exchange(port_compteur_1_c,context,didvote,dico_a)	
+	resultat=(other_votes+own_votes)%23
+	if (verification_vote(resultat,dico_a)):
+		print("Resultat final :")
+		print(resultat)
+	else : 
+		print("Il y a eu une triche")
 
 
 if __name__ == "__main__":
