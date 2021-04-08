@@ -62,7 +62,7 @@ if __name__ == '__main__':
                         help='key size')
     parser.add_argument('-m', '--parties', dest='m', type=int,
                         help='number of parties')
-    parser.set_defaults(m=5, key_size=2048, prefix='party_')
+    parser.set_defaults(m=5, key_size=2048, prefix='Party_')
     options = parser.parse_args()
 
     # self-signed certificate

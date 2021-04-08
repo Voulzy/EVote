@@ -8,8 +8,8 @@ from OpenSSL import crypto
 import sys
 import time
 import os
-crtfile ='Voteur_0.cert'
-key_file='Voteur_0.key'
+crtfile ='Party_0.cert'
+key_file='Party_0.key'
 nbVotants=int(sys.argv[1])
 cafile= 'myCA.cert'
 data=[0,0,0,0,0,0,0,0,0,0]
@@ -51,7 +51,7 @@ async def handle_client(reader,writer):
 			print('Problème de lecture')
 			break
 		dico_a[pub_key_dico]=pickle.loads(data)
-		print("On as recu : ",pickle.loads(data))
+		print("On a recu : ",pickle.loads(data))
 		break;
 
 def compteur_exchange(port,context,vecteur,dico):
@@ -81,7 +81,7 @@ def compare_votes(own,other):
 
 def get_public_keys(i):
 	for j in range(3,i+2):
-		file_path = os.path.join(os.getcwd(),'Voteur_{}.cert').format(j-1)
+		file_path = os.path.join(os.getcwd(),'Party_{}.cert').format(j-1)
 		f = open(file_path,'r')
 		cert = f.read()
 		crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, cert)

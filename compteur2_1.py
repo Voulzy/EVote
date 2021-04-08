@@ -8,10 +8,10 @@ import sys
 import os
 import pickle
 import time
-crtfile ='Voteur_1.cert'
-key_file='Voteur_1.key'
+crtfile ='Party_1.cert'
+key_file='Party_1.key'
 cafile= 'myCA.cert'
-hostname="Votant n 0"
+hostname="Party n 0"
 nbVotants=int(sys.argv[1])
 data=[0,0,0,0,0,0,0,0,0,0]
 pubkeys = []
@@ -53,7 +53,7 @@ async def handle_client(reader,writer,data1):
 		
 		data+=pickle.loads(data1)
 		dico_a[pub_key_dico]=pickle.loads(data1)
-		print("On as recu : ",pickle.loads(data1))
+		print("On a recu : ",pickle.loads(data1))
 		writer.close()
 		break
 
@@ -86,7 +86,7 @@ def compteur_exchange(port,context,vecteur,dico):
 
 def get_public_keys(i):
 	for j in range(3,i+2):
-		file_path = os.path.join(os.getcwd(),'Voteur_{}.cert').format(j-1)
+		file_path = os.path.join(os.getcwd(),'Party_{}.cert').format(j-1)
 		f = open(file_path,'r')
 		cert = f.read()
 		crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, cert)

@@ -7,14 +7,14 @@ from config import port_compteur_1_v, port_compteur_2_v
 import time
 from threading import Thread
 import os.path
-crtfile='Voteur_2.cert'
-key_file='Voteur_2.key'
+crtfile='Party_2.cert'
+key_file='Party_2.key'
 cafile='myCA.cert'
 
 port=11662
 host='localhost'
-hostname_c1="Votant n 0"
-hostname_c2="Votant n 1"
+hostname_c1="Party n 0"
+hostname_c2="Party n 1"
 def generer_vecteur_vote(taille):
     x=np.zeros(taille)
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     path=os.getcwd()
     while i < 3 : 
         print (f'Voteur_{i+2}')
-        voter = Thread(target=send_votes,args=(os.path.join(path,f'Voteur_{i+2}.cert'),os.path.join(path,f'Voteur_{i+2}.key')))
+        voter = Thread(target=send_votes,args=(os.path.join(path,f'Party_{i+2}.cert'),os.path.join(path,f'Party_{i+2}.key')))
         voter.start()
         voter.join()
         time.sleep(0.5)
